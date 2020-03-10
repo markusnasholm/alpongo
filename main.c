@@ -11,6 +11,7 @@
 
 #define R_SPACING 30
 #define BALL_SIZE 10
+#define BALL_MAX_dy 12
 
 #define KEY_SEEN     1
 #define KEY_RELEASED 2
@@ -19,7 +20,6 @@ typedef struct racket {
     int x,y, w,h;
     int dx,dy;
     bool human;
-    int player;
 } racket;
 
 typedef struct ball {
@@ -73,7 +73,11 @@ int bmove(ball* b, racket* ra[2])
             b->dy += ((b->y - m) / 20) + (ra[i]->dy / 2);
         }
     }
-
+    
+    if (b->dy > BALL_MAX_dy)
+        b->dy = BALL_MAX_dy;
+    if (b->dy < -BALL_MAX_dy)
+        b->dy = -BALL_MAX_dy;
 
     b->x += b->dx;
     b->y += b->dy;
@@ -130,11 +134,11 @@ int main()
     unsigned char key[ALLEGRO_KEY_MAX];
     memset(key, 0, sizeof(key));
 
-    racket r0 = {0,0, 10, SCREEN_H/6, 0,0, true, 0};
+    racket r0 = {0,0, 10, SCREEN_H/6, 0,0, true};
     r0.x = R_SPACING;
     r0.y = (SCREEN_H / 2) - (r0.h / 2);
 
-    racket r1 = {0,0, 10, SCREEN_H/6, 0,0, false, 0};
+    racket r1 = {0,0, 10, SCREEN_H/6, 0,0, false};
     r1.x = SCREEN_W - (r1.w + R_SPACING);
     r1.y = (SCREEN_H / 2) - (r1.h / 2);
 
@@ -152,13 +156,24 @@ int main()
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER:
-                if(key[ALLEGRO_KEY_UP]){
-                    r0.dy -= 1;
+                if (key[ALLEGRO_KEY_UP]) {
                     r1.dy -= 1;
                 }
-                if(key[ALLEGRO_KEY_DOWN]){
-                    r0.dy += 1;
+                else if (key[ALLEGRO_KEY_DOWN]) {
                     r1.dy += 1;
+                }
+                else {
+                    r1.dy = r1.dy * 0.95;
+                }
+
+                if(key[ALLEGRO_KEY_W]) {
+                    r0.dy -= 1;
+                }
+                else if (key[ALLEGRO_KEY_S]) {
+                    r0.dy += 1;
+                }
+                else {
+                    r0.dy = r0.dy * 0.95;
                 }
 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
@@ -199,6 +214,7 @@ int main()
                 al_draw_textf(font, al_map_rgb(255, 0, 0), 0, i * 11, 0, "%.1d %.1d %.1d %.1d", x1, y1, x2, y2);
                 al_draw_filled_rectangle(x1, y1, x2, y2, al_map_rgb(255,255,255));
             }
+            al_draw_textf(font, al_map_rgb(255, 0, 0), 0, SCREEN_H - 11, 0, "%.1d %.1d", b.dx, b.dy);
             al_draw_filled_rectangle(b.x, b.y, b.x + BALL_SIZE, b.y + BALL_SIZE, al_map_rgb(0,255,255));
 
             al_flip_display();
