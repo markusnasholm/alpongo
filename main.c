@@ -47,6 +47,32 @@ int bmove(ball* b, racket* ra[2])
         return 1;
     }
 
+    for (int i = 0; i < 2; i++) {
+        int x1 = ra[i]->x;
+        int y1 = ra[i]->y;
+        int x2 = ra[i]->x + ra[i]->w;
+        int y2 = ra[i]->y + ra[i]->h;
+        int m = ra[i]->y + (ra[i]->h / 2);
+
+        int bx1 = b->x;
+        int by1 = b->y;
+        int bx2 = b->x + BALL_SIZE;
+        int by2 = b->y + BALL_SIZE;
+
+        if ( (bx1 >= x1 && bx1 <= x2 && by1 >= y1 && by1 <= y2)
+                || (bx2 >= x1 && bx2 <= x2 && by1 >= y1 && by1 <= y2) 
+                || (bx1 >= x1 && bx1 <= x2 && by2 >= y1 && by2 <= y2) 
+                || (bx2 >= x1 && bx2 <= x2 && by1 >= y2 && by2 <= y2) 
+                ) {
+            if (b->dx < 0)
+                b->x = x2;
+            if (b->dx > 0)
+                b->x = x1 - BALL_SIZE;
+            b->dx *= -1;
+            // needs work:
+            b->dy += ((b->y - m) / 20) + (ra[i]->dy / 2);
+        }
+    }
 
 
     b->x += b->dx;
@@ -104,7 +130,6 @@ int main()
     unsigned char key[ALLEGRO_KEY_MAX];
     memset(key, 0, sizeof(key));
 
-
     racket r0 = {0,0, 10, SCREEN_H/6, 0,0, true, 0};
     r0.x = R_SPACING;
     r0.y = (SCREEN_H / 2) - (r0.h / 2);
@@ -113,7 +138,7 @@ int main()
     r1.x = SCREEN_W - (r1.w + R_SPACING);
     r1.y = (SCREEN_H / 2) - (r1.h / 2);
 
-    ball b = {(SCREEN_W / 2) - (BALL_SIZE / 2),(SCREEN_H / 2) - (BALL_SIZE / 2),-3,-10};
+    ball b = {(SCREEN_W / 2) - (BALL_SIZE / 2),(SCREEN_H / 2) - (BALL_SIZE / 2),-6,0};
 
     racket* rarr[2];
     rarr[0] = &r0;
@@ -129,11 +154,11 @@ int main()
             case ALLEGRO_EVENT_TIMER:
                 if(key[ALLEGRO_KEY_UP]){
                     r0.dy -= 1;
-                    r1.dy += 1;
+                    r1.dy -= 1;
                 }
                 if(key[ALLEGRO_KEY_DOWN]){
                     r0.dy += 1;
-                    r1.dy -= 1;
+                    r1.dy += 1;
                 }
 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
