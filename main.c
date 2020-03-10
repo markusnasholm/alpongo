@@ -84,6 +84,14 @@ int bmove(ball* b, racket* ra[2])
     return 0;
 }
 
+void rAI(racket* r, ball b)
+{
+    if (b.y > r->y + r->h && r->dy <= 8)
+        r->dy += 1;
+    else if (b.y < r->y && r->dy >= -8)
+        r->dy -= 1;
+}
+
 void rmove(racket* ra[2])
 {
     for (int i = 0; i < 2; i++) {
@@ -155,25 +163,33 @@ int main()
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER:
-                if (key[ALLEGRO_KEY_UP]) {
-                    r1.dy -= 1;
+                if (r1.human) {
+                    if (key[ALLEGRO_KEY_UP]) {
+                        r1.dy -= 1;
+                    }
+                    else if (key[ALLEGRO_KEY_DOWN]) {
+                        r1.dy += 1;
+                    }
+                    else {
+                        r1.dy = r1.dy * 0.95;
+                    }
                 }
-                else if (key[ALLEGRO_KEY_DOWN]) {
-                    r1.dy += 1;
-                }
-                else {
-                    r1.dy = r1.dy * 0.95;
-                }
+                else
+                    rAI(&r1, b);
 
-                if(key[ALLEGRO_KEY_W]) {
-                    r0.dy -= 1;
+                if (r0.human) {
+                    if(key[ALLEGRO_KEY_W]) {
+                        r0.dy -= 1;
+                    }
+                    else if (key[ALLEGRO_KEY_S]) {
+                        r0.dy += 1;
+                    }
+                    else {
+                        r0.dy = r0.dy * 0.95;
+                    }
                 }
-                else if (key[ALLEGRO_KEY_S]) {
-                    r0.dy += 1;
-                }
-                else {
-                    r0.dy = r0.dy * 0.95;
-                }
+                else
+                    rAI(&r1, b);
 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
                     key[i] &= KEY_SEEN;
