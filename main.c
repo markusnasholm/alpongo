@@ -10,6 +10,7 @@
 #define SCREEN_H 900
 
 #define R_SPACING 30
+#define BALL_SIZE 10
 
 #define KEY_SEEN     1
 #define KEY_RELEASED 2
@@ -32,6 +33,40 @@ void must_init(bool test, const char *description)
 
     printf("couldn't initialize %s\n", description);
     exit(1);
+}
+
+int bmove(ball* b, racket* ra[2])
+{
+    if (b->y < 0 || b->y + BALL_SIZE > SCREEN_H) {
+        b->dy *= -1;
+    }
+    if (b->x + BALL_SIZE < 0) {
+        return 2;
+    }
+    if (b->x > SCREEN_W) {
+        return 1;
+    }
+
+
+
+    b->x += b->dx;
+    b->y += b->dy;
+    return 0;
+}
+
+void rmove(racket* ra[2])
+{
+    for (int i = 0; i < 2; i++) {
+        if (ra[i]->y + (ra[i]->h / 2) < 0) {
+            ra[i]->y = 0 - (ra[i]->h / 2);
+            ra[i]->dy = 0;
+        }
+        else if (ra[i]->y + (ra[i]->h / 2) > SCREEN_H) {
+            ra[i]->y = SCREEN_H - (ra[i]->h / 2);
+            ra[i]->dy = 0;
+        }
+        ra[i]->y += ra[i]->dy;
+    }
 }
 
 int main()
@@ -78,6 +113,7 @@ int main()
     r1.x = SCREEN_W - (r1.w + R_SPACING);
     r1.y = (SCREEN_H / 2) - (r1.h / 2);
 
+    ball b = {(SCREEN_W / 2) - (BALL_SIZE / 2),(SCREEN_H / 2) - (BALL_SIZE / 2),-3,-10};
 
     racket* rarr[2];
     rarr[0] = &r0;
@@ -91,13 +127,21 @@ int main()
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER:
-                //if(key[ALLEGRO_KEY_UP])
-                //    y--;
-                //if(key[ALLEGRO_KEY_DOWN])
-                //    y++;
+                if(key[ALLEGRO_KEY_UP]){
+                    r0.dy -= 1;
+                    r1.dy += 1;
+                }
+                if(key[ALLEGRO_KEY_DOWN]){
+                    r0.dy += 1;
+                    r1.dy -= 1;
+                }
 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
                     key[i] &= KEY_SEEN;
+
+                rmove(rarr);
+                if (bmove(&b, rarr))
+                    done = true;
 
                 redraw = true;
                 break;
@@ -121,7 +165,6 @@ int main()
         if(redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
-            //al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %.1f Y: %.1f", x, y);
             for (int i = 0; i < 2; i++) {
                 int x1 = rarr[i]->x;
                 int y1 = rarr[i]->y;
@@ -131,6 +174,7 @@ int main()
                 al_draw_textf(font, al_map_rgb(255, 0, 0), 0, i * 11, 0, "%.1d %.1d %.1d %.1d", x1, y1, x2, y2);
                 al_draw_filled_rectangle(x1, y1, x2, y2, al_map_rgb(255,255,255));
             }
+            al_draw_filled_rectangle(b.x, b.y, b.x + BALL_SIZE, b.y + BALL_SIZE, al_map_rgb(0,255,255));
 
             al_flip_display();
 
