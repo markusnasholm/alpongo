@@ -149,8 +149,7 @@ int main()
     rarr[1] = &r1;
 
     al_start_timer(timer);
-    while(1)
-    {
+    while (true) {
         al_wait_for_event(queue, &event);
 
         switch(event.type)
