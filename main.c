@@ -86,10 +86,14 @@ int bmove(ball* b, racket* ra[2])
 
 void rAI(racket* r, ball b)
 {
-    if (b.y > r->y + r->h && r->dy <= 8)
+    int m = r->y + (r->h / 2);
+    int r4th = r->h / 4;
+    if (b.y > m+r4th && r->dy <= 10)
         r->dy += 1;
-    else if (b.y < r->y && r->dy >= -8)
+    else if (b.y < m-r4th && r->dy >= -10)
         r->dy -= 1;
+    else if (b.dy >= -6 && b.dy <= 6)
+        r->dy = b.dy;
 }
 
 void rmove(racket* ra[2])
